@@ -1,65 +1,76 @@
 # Bring in deps
 import os 
-# from apikey import apikey 
 
 import streamlit as st 
-from langchain.llms import OpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain, SequentialChain 
-from langchain.memory import ConversationBufferMemory
-from langchain.utilities import WikipediaAPIWrapper 
+
+from langchain.agents import Tool, AgentExecutor, BaseMultiActionAgent
 from langchain import SerpAPIWrapper
-from langchain.agents import load_tools
-from langchain.agents import initialize_agent
-from langchain.agents import AgentType
-from langchain.llms import OpenAI
+from typing import List, Tuple, Any, Union
+from langchain.schema import AgentAction, AgentFinish
 
-serpapi = SerpAPIWrapper()
+def random_word(query: str) -> str:
+    print("\\nNow I'm doing this!")
+    return "foo"
 
-TEMPERATURE = 0.1
+search = SerpAPIWrapper()
+tools = [
+    Tool(
+        name="Search",
+        func=search.run,
+        description="useful for when you need to answer questions about current events"
+    ),
+    Tool(
+        name="RandomWord",
+        func=random_word,
+        description="call this to get a random word."
+    )
+]
 
-# App framework
-st.title('🦜🔗 Tech White Paper GPT Creator')
-prompt = st.text_input('Plug in your prompt here') 
+class FakeAgent(BaseMultiActionAgent):
+    """Fake Custom Agent."""
+    @property
+    def input_keys(self):
+        return ["input"]
 
-# Prompt templates
-title_template = PromptTemplate(
-    input_variables = ['topic'], 
-    template='write me a technical white paper title about {topic}'
-)
+    def plan(
+        self,
+        intermediate_steps: List[Tuple[AgentAction, str]],
+        **kwargs: Any
+    ) -> Union[List[AgentAction], AgentFinish]:
+        """Given input, decided what to do.
 
-exec_summary_template = PromptTemplate(
-    input_variables = ['title', 'wikipedia_research'], 
-    template='write me executive summary paragraph based on this title: {title} while leveraging this wikipedia research: {wikipedia_research} '
-)
+        Args:
+            intermediate_steps: Steps the LLM has taken to date, along with observations
+            **kwargs: User inputs.
 
-introduction_template = PromptTemplate(
-    input_variables = ['title', 'wikipedia_research', 'exec_summary'], 
-    template='write me introduction paragrapgh for a white paper based on this title: {title} while leveraging this wikipedia research: {wikipedia_research} and this executive paragraph: {exec_summary} '
-)
+        Returns:
+            Action specifying what tool to use.
+        """
+        if len(intermediate_steps) == 0:
+            return [
+                AgentAction(tool="Search", tool_input=kwargs["input"], log=""),
+                AgentAction(tool="RandomWord", tool_input=kwargs["input"], log=""),
+            ]
+        else:
+            return AgentFinish(return_values={"output": "bar"}, log="")
+    
+agent = FakeAgent()
+agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
 
-# Memory 
-title_memory = ConversationBufferMemory(input_key='topic', memory_key='chat_history')
-exec_summary_memory = ConversationBufferMemory(input_key='title', memory_key='chat_history')
-introduction_memory = ConversationBufferMemory(input_key='exec_summary', memory_key='chat_history')
+def run_agent(parameter):
+    agent_executor.run(parameter)
 
-# Llms
-llm = OpenAI(temperature=TEMPERATURE) 
-title_chain = LLMChain(llm=llm, prompt=title_template, verbose=True, output_key='title', memory=title_memory)
-exec_summary_chain = LLMChain(llm=llm, prompt=exec_summary_template, verbose=True, output_key='exec_summary', memory=exec_summary_memory)
-introduction_chain = LLMChain(llm=llm, prompt=introduction_template, verbose=True, output_key='introduction', memory=introduction_memory)
+This example creates a custom agent that uses two tools: `Search` and `RandomWord`. The `plan` method specifies that the agent should first use the `Search` tool with the user input as the tool input, then use the `RandomWord` tool with the same input. After these two steps are completed, the agent returns a final output of `"bar"`.
 
-wiki = WikipediaAPIWrapper()
+I hope this helps! Let me know if you have any further questions.
 
-# Show stuff to the screen if there's a prompt
-if prompt: 
-    title = title_chain.run(prompt)
-    wiki_research = wiki.run(prompt) 
-    exec_summary = exec_summary_chain.run(title=title, wikipedia_research=wiki_research)
-    introduction = introduction_chain.run(title=title, wikipedia_research=wiki_research, exec_summary=exec_summary)
-
-    st.write(title)
-    st.write("Executive Summary")
-    st.write(exec_summary)
-    st.write("Analysis")
-    st.write(introduction)
+def main():
+    st.title("Tech White Paper - GPT")
+    
+    parameter = st.text_input("Enter the topic that you'd like the technical white paper about...")
+    
+    if parameter:
+        st.write(run_agent(parameter))
+        st.write(f"Agent has run with the parameter: {parameter}")
+        
+    
