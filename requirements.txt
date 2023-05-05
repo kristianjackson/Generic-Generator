@@ -2,3 +2,4 @@ langchain
 openai
 streamlit
 wikipedia
+google-search-results
