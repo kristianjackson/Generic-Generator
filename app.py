@@ -60,10 +60,6 @@ agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, ve
 def run_agent(parameter):
     agent_executor.run(parameter)
 
-This example creates a custom agent that uses two tools: `Search` and `RandomWord`. The `plan` method specifies that the agent should first use the `Search` tool with the user input as the tool input, then use the `RandomWord` tool with the same input. After these two steps are completed, the agent returns a final output of `"bar"`.
-
-I hope this helps! Let me know if you have any further questions.
-
 def main():
     st.title("Tech White Paper - GPT")
     
