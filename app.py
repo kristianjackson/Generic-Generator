@@ -11,6 +11,8 @@ from langchain.utilities import WikipediaAPIWrapper
 
 # os.environ['OPENAI_API_KEY'] = apikey
 
+TEMPERATURE = 0.1
+
 # App framework
 st.title('🦜🔗 Tech White Paper GPT Creator')
 prompt = st.text_input('Plug in your prompt here') 
