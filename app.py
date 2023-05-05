@@ -32,7 +32,7 @@ class FakeAgent(BaseMultiActionAgent):
     def input_keys(self):
         return ["input"]
 
-    def plan(
+    def aplan(  # Rename this method to 'aplan'
         self,
         intermediate_steps: List[Tuple[AgentAction, str]],
         **kwargs: Any
@@ -53,6 +53,7 @@ class FakeAgent(BaseMultiActionAgent):
             ]
         else:
             return AgentFinish(return_values={"output": "bar"}, log="")
+
     
 agent = FakeAgent()
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
