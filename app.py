@@ -32,7 +32,7 @@ script_memory = ConversationBufferMemory(input_key='title', memory_key='chat_his
 
 
 # Llms
-llm = OpenAI(temperature=0.9) 
+llm = OpenAI(temperature=0.1) 
 title_chain = LLMChain(llm=llm, prompt=title_template, verbose=True, output_key='title', memory=title_memory)
 script_chain = LLMChain(llm=llm, prompt=script_template, verbose=True, output_key='script', memory=script_memory)
 
