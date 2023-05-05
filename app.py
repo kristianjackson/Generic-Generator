@@ -60,8 +60,11 @@ if prompt:
     with st.expander('Title History'): 
         st.info(title_memory.buffer)
 
-    with st.expander('Script History'): 
-        st.info(script_memory.buffer)
+    with st.expander('Executive Summary History'): 
+        st.info(exec_summary_memory.buffer)
+
+    with st.expander('Introduction Paragraph History'): 
+        st.info(introduction_memory.buffer)
 
     with st.expander('Wikipedia Research'): 
         st.info(wiki_research)
